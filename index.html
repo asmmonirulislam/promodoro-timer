@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <meta name="description" content="FlowState — Premium Pomodoro Timer for Deep Work" />
+  <title>FlowState — Deep Work Timer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="cyber" data-phase="focus">
+
+  <!-- Ambient background -->
+  <div class="bg-canvas">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+    <div class="noise-overlay"></div>
+  </div>
+
+  <!-- Confetti canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- ===== MAIN APP ===== -->
+  <div class="app-shell" id="appShell">
+
+    <!-- Top navbar -->
+    <header class="navbar">
+      <div class="nav-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <span class="brand-name">FlowState</span>
+      </div>
+
+      <nav class="nav-pills">
+        <button class="nav-pill active" data-view="timer" title="Timer (1)">Timer</button>
+        <button class="nav-pill" data-view="tasks" title="Tasks (2)">Tasks</button>
+        <button class="nav-pill" data-view="stats" title="Stats (3)">Stats</button>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="icon-btn" id="muteBtn" title="Mute (M)">
+          <svg id="muteIcon" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M15.5 8.5c1.5 1.5 1.5 5.5 0 7M19 6c3 3 3 9 0 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn" id="focusModeBtn" title="Focus Mode (F)">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M8 3H5a2 2 0 00-2 2v3M21 8V5a2 2 0 00-2-2h-3M16 21h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn" id="settingsBtn" title="Settings (S)">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== VIEWS ===== -->
+    <main class="main-content">
+
+      <!-- TIMER VIEW -->
+      <section class="view active" id="view-timer">
+        <div class="timer-layout">
+
+          <!-- Left panel -->
+          <aside class="side-panel left-panel">
+            <div class="panel-card streak-card">
+              <div class="streak-flame">🔥</div>
+              <div class="streak-info">
+                <span class="streak-count" id="streakCount">0</span>
+                <span class="streak-label">Day Streak</span>
+              </div>
+            </div>
+
+            <div class="panel-card stats-mini">
+              <div class="mini-stat">
+                <span class="mini-val" id="todayPomodoros">0</span>
+                <span class="mini-key">Today</span>
+              </div>
+              <div class="mini-divider"></div>
+              <div class="mini-stat">
+                <span class="mini-val" id="todayMinutes">0</span>
+                <span class="mini-key">Minutes</span>
+              </div>
+              <div class="mini-divider"></div>
+              <div class="mini-stat">
+                <span class="mini-val" id="totalPomodoros">0</span>
+                <span class="mini-key">Total</span>
+              </div>
+            </div>
+
+            <div class="panel-card task-input-card">
+              <label class="task-label">Current Focus</label>
+              <input type="text" class="task-input" id="currentTask" placeholder="What are you working on?" maxlength="60" />
+            </div>
+
+            <div class="panel-card ambient-card">
+              <span class="ambient-title">Ambient Sound</span>
+              <div class="ambient-grid">
+                <button class="ambient-btn" data-sound="rain" title="Rain">🌧️</button>
+                <button class="ambient-btn" data-sound="cafe" title="Café">☕</button>
+                <button class="ambient-btn" data-sound="forest" title="Forest">🌿</button>
+                <button class="ambient-btn" data-sound="whitenoise" title="White Noise">〰️</button>
+                <button class="ambient-btn" data-sound="keys" title="Keyboard">⌨️</button>
+                <button class="ambient-btn active-off" data-sound="off" title="Off">✕</button>
+              </div>
+              <div class="volume-row">
+                <svg viewBox="0 0 24 24" width="14" fill="none"><path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                <input type="range" class="vol-slider" id="ambientVolume" min="0" max="100" value="30" />
+              </div>
+            </div>
+          </aside>
+
+          <!-- CENTER: Timer -->
+          <div class="timer-center">
+            <!-- Phase badges -->
+            <div class="phase-tabs">
+              <button class="phase-tab active" data-phase="focus">Focus</button>
+              <button class="phase-tab" data-phase="short">Short Break</button>
+              <button class="phase-tab" data-phase="long">Long Break</button>
+            </div>
+
+            <!-- Quote -->
+            <p class="focus-quote" id="focusQuote">"The secret of getting ahead is getting started."</p>
+
+            <!-- Timer ring -->
+            <div class="timer-wrapper">
+              <svg class="progress-ring" viewBox="0 0 320 320" id="progressRing">
+                <defs>
+                  <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="var(--accent-a)" />
+                    <stop offset="100%" stop-color="var(--accent-b)" />
+                  </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                    <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+                <!-- Track -->
+                <circle class="ring-track" cx="160" cy="160" r="140" fill="none" stroke-width="6"/>
+                <!-- Progress -->
+                <circle class="ring-progress" id="ringProgress" cx="160" cy="160" r="140"
+                  fill="none" stroke="url(#ringGrad)" stroke-width="6"
+                  stroke-linecap="round" stroke-dasharray="879.65" stroke-dashoffset="0"
+                  filter="url(#glow)" transform="rotate(-90 160 160)"/>
+                <!-- Tick marks -->
+                <g class="tick-marks" id="tickMarks"></g>
+              </svg>
+
+              <!-- Inner content -->
+              <div class="timer-inner">
+                <div class="timer-display" id="timerDisplay">25:00</div>
+                <div class="phase-label" id="phaseLabel">Focus Time</div>
+                <div class="session-dots" id="sessionDots">
+                  <span class="dot active"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="timer-controls">
+              <button class="ctrl-btn secondary" id="resetBtn" title="Reset (R)">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3v5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="ctrl-btn primary" id="startBtn" title="Start/Pause (Space)">
+                <span id="startBtnIcon">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </span>
+                <span id="startBtnText">Start</span>
+              </button>
+              <button class="ctrl-btn secondary" id="skipBtn" title="Skip">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M5 4l10 8-10 8V4zM19 5v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right panel -->
+          <aside class="side-panel right-panel">
+            <div class="panel-card history-card">
+              <h3 class="panel-title">Session Log</h3>
+              <div class="history-list" id="historyList">
+                <div class="history-empty">No sessions yet today.</div>
+              </div>
+            </div>
+
+            <div class="panel-card shortcuts-card">
+              <h3 class="panel-title">Shortcuts</h3>
+              <div class="shortcuts-list">
+                <div class="shortcut"><kbd>Space</kbd><span>Play/Pause</span></div>
+                <div class="shortcut"><kbd>R</kbd><span>Reset</span></div>
+                <div class="shortcut"><kbd>F</kbd><span>Focus Mode</span></div>
+                <div class="shortcut"><kbd>S</kbd><span>Settings</span></div>
+                <div class="shortcut"><kbd>M</kbd><span>Mute</span></div>
+                <div class="shortcut"><kbd>1–3</kbd><span>Switch View</span></div>
+              </div>
+            </div>
+          </aside>
+
+        </div>
+      </section>
+
+      <!-- TASKS VIEW -->
+      <section class="view" id="view-tasks">
+        <div class="tasks-layout">
+          <div class="tasks-header">
+            <h2 class="view-title">Task List</h2>
+            <p class="view-sub">Track what you're focusing on</p>
+          </div>
+          <div class="task-add-row">
+            <input type="text" class="task-add-input" id="newTaskInput" placeholder="Add a new task..." maxlength="80" />
+            <button class="add-task-btn" id="addTaskBtn">+ Add</button>
+          </div>
+          <div class="tasks-container" id="tasksList"></div>
+        </div>
+      </section>
+
+      <!-- STATS VIEW -->
+      <section class="view" id="view-stats">
+        <div class="stats-layout">
+          <div class="stats-header">
+            <h2 class="view-title">Productivity Stats</h2>
+            <p class="view-sub">Your focus journey</p>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card big">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-value" id="statTotal">0</div>
+              <div class="stat-label">Total Pomodoros</div>
+            </div>
+            <div class="stat-card big">
+              <div class="stat-icon">⏱️</div>
+              <div class="stat-value" id="statHours">0h 0m</div>
+              <div class="stat-label">Total Focus Time</div>
+            </div>
+            <div class="stat-card big">
+              <div class="stat-icon">🔥</div>
+              <div class="stat-value" id="statStreak">0</div>
+              <div class="stat-label">Best Streak</div>
+            </div>
+            <div class="stat-card big">
+              <div class="stat-icon">📅</div>
+              <div class="stat-value" id="statToday">0</div>
+              <div class="stat-label">Today</div>
+            </div>
+          </div>
+
+          <!-- Weekly chart -->
+          <div class="stat-card weekly-chart-card">
+            <h3 class="panel-title">This Week</h3>
+            <div class="weekly-chart" id="weeklyChart"></div>
+          </div>
+
+          <!-- Achievements -->
+          <div class="stat-card achievements-card">
+            <h3 class="panel-title">Achievements</h3>
+            <div class="achievements-grid" id="achievementsGrid"></div>
+          </div>
+
+          <!-- Export -->
+          <div class="export-row">
+            <button class="export-btn" id="exportBtn">📊 Export Statistics</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===== FOCUS MODE OVERLAY ===== -->
+  <div class="focus-overlay" id="focusOverlay">
+    <div class="focus-bg-anim">
+      <div class="focus-orb fo1"></div>
+      <div class="focus-orb fo2"></div>
+    </div>
+    <button class="focus-exit" id="focusExitBtn">
+      <svg viewBox="0 0 24 24" fill="none" width="20"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Exit Focus
+    </button>
+    <div class="focus-content">
+      <p class="focus-mode-quote" id="focusModeQuote">"The secret of getting ahead is getting started."</p>
+      <div class="focus-timer" id="focusTimerDisplay">25:00</div>
+      <div class="focus-phase" id="focusPhaseLabel">Focus Time</div>
+      <div class="focus-controls">
+        <button class="focus-ctrl" id="focusStartBtn">▶</button>
+      </div>
+      <p class="focus-task" id="focusTask"></p>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS PANEL ===== -->
+  <div class="modal-overlay" id="settingsOverlay">
+    <div class="modal settings-modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Settings</h2>
+        <button class="modal-close" id="settingsClose">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Duration (minutes)</h3>
+          <div class="settings-row">
+            <label>Focus</label>
+            <div class="num-input-group">
+              <button class="num-btn" data-target="focusDuration" data-delta="-1">−</button>
+              <input type="number" class="num-input" id="focusDuration" min="1" max="90" value="25" />
+              <button class="num-btn" data-target="focusDuration" data-delta="1">+</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <label>Short Break</label>
+            <div class="num-input-group">
+              <button class="num-btn" data-target="shortBreak" data-delta="-1">−</button>
+              <input type="number" class="num-input" id="shortBreak" min="1" max="30" value="5" />
+              <button class="num-btn" data-target="shortBreak" data-delta="1">+</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <label>Long Break</label>
+            <div class="num-input-group">
+              <button class="num-btn" data-target="longBreak" data-delta="-1">−</button>
+              <input type="number" class="num-input" id="longBreak" min="1" max="60" value="15" />
+              <button class="num-btn" data-target="longBreak" data-delta="1">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Auto Behavior</h3>
+          <div class="settings-row toggle-row">
+            <label>Auto-start Breaks</label>
+            <label class="toggle"><input type="checkbox" id="autoBreak" /><span class="toggle-track"></span></label>
+          </div>
+          <div class="settings-row toggle-row">
+            <label>Auto-start Focus</label>
+            <label class="toggle"><input type="checkbox" id="autoFocus" /><span class="toggle-track"></span></label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Theme</h3>
+          <div class="theme-pills">
+            <button class="theme-pill active" data-theme="cyber">Cyber Neon</button>
+            <button class="theme-pill" data-theme="minimal">Minimal Dark</button>
+            <button class="theme-pill" data-theme="soft">Soft Focus</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Alarm Volume</h3>
+          <div class="volume-row">
+            <svg viewBox="0 0 24 24" width="14" fill="none"><path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <input type="range" class="vol-slider" id="alarmVolume" min="0" max="100" value="80" />
+            <span id="alarmVolumeVal">80%</span>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <button class="danger-btn" id="resetAllData">Reset All Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BREAK MODAL -->
+  <div class="modal-overlay" id="breakOverlay">
+    <div class="modal break-modal">
+      <div class="break-emoji">🎉</div>
+      <h2 class="modal-title">Break Complete!</h2>
+      <p class="modal-sub">Ready for another deep focus session?</p>
+      <div class="modal-actions">
+        <button class="modal-btn primary" id="startFocusFromBreak">Start Focus</button>
+        <button class="modal-btn secondary" id="skipFromBreak">Not Yet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION FALLBACK -->
+  <div class="in-app-alert" id="inAppAlert">
+    <span id="inAppAlertText"></span>
+    <button onclick="document.getElementById('inAppAlert').classList.remove('visible')">✕</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
